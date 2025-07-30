@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Courses</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #ffd6e0, #fbc2eb);
+      color: #333;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-family: 'Pacifico', cursive;
+      color: #d63384;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .courses-container {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .course-card {
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .course-card input {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #fff4fa;
+    }
+
+    .course-card button {
+      background-color: #f06292;
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-right: 8px;
+    }
+
+    .course-card button:hover {
+      background-color: #e91e63;
+    }
+
+    .add-course-form {
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .add-course-form input {
+      padding: 0.7rem;
+      margin: 0.4rem;
+      width: 200px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    .add-course-form button {
+      margin-top: 1rem;
+    }
+
+    #status, #error {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    #status { color: green; }
+    #error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>📚 My Courses</h1>
+  <div class="courses-container" id="courses-container"></div>
+
+  <div class="add-course-form">
+    <h2>Add a New Course</h2>
+    <input type="text" id="new-name" placeholder="Course Name" />
+    <input type="text" id="new-code" placeholder="Course Code" />
+    <input type="text" id="new-outline" placeholder="Outline URL (optional)" />
+    <br>
+    <button onclick="addCourse()">➕ Add Course</button>
+  </div>
+
+  <p id="status"></p>
+  <p id="error"></p>
+
+  <script>
+    const token = localStorage.getItem("token");
+    const apiUrl = 'http://localhost:5000/api/courses';
+
+    if (!token) {
+      alert("Please log in first.");
+      window.location.href = "/login.html";
+    }
+
+    async function fetchCourses() {
+      try {
+        const res = await fetch(apiUrl, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch courses");
+
+        const courses = await res.json();
+        const container = document.getElementById("courses-container");
+        container.innerHTML = "";
+
+        if (courses.length === 0) {
+          document.getElementById("status").textContent = "No courses found. Add one below!";
+          return;
+        }
+
+        courses.forEach((course) => {
+          const card = document.createElement("div");
+          card.className = "course-card";
+          card.innerHTML = `
+            <input type="text" value="${course.Name}" id="name-${course.CourseId}" />
+            <input type="text" value="${course.Code}" id="code-${course.CourseId}" />
+            <input type="text" value="${course.OutlineFileUrl || ''}" id="outline-${course.CourseId}" />
+            <button onclick="updateCourse(${course.CourseId})">💾 Save</button>
+          `;
+          container.appendChild(card);
+        });
+
+        document.getElementById("status").textContent = "";
+      } catch (err) {
+        document.getElementById("error").textContent = err.message;
+      }
+    }
+
+    async function addCourse() {
+      const name = document.getElementById("new-name").value;
+      const code = document.getElementById("new-code").value;
+      const outline = document.getElementById("new-outline").value;
+
+      if (!name || !code) {
+        document.getElementById("error").textContent = "Name and code are required";
+        return;
+      }
+
+      try {
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ Name: name, Code: code, OutlineFileUrl: outline }),
+        });
+
+        if (!res.ok) throw new Error("Failed to add course");
+
+        document.getElementById("status").textContent = "Course added!";
+        document.getElementById("error").textContent = "";
+        document.getElementById("new-name").value = "";
+        document.getElementById("new-code").value = "";
+        document.getElementById("new-outline").value = "";
+        fetchCourses();
+      } catch (err) {
+        document.getElementById("error").textContent = err.message;
+      }
+    }
+
+    async function updateCourse(id) {
+      const name = document.getElementById(`name-${id}`).value;
+      const code = document.getElementById(`code-${id}`).value;
+      const outline = document.getElementById(`outline-${id}`).value;
+
+      try {
+        const res = await fetch(`${apiUrl}/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ Name: name, Code: code, OutlineFileUrl: outline }),
+        });
+
+        if (!res.ok) throw new Error("Failed to update course");
+
+        document.getElementById("status").textContent = "Course updated!";
+        document.getElementById("error").textContent = "";
+      } catch (err) {
+        document.getElementById("error").textContent = err.message;
+      }
+    }
+
+    fetchCourses();
+  </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weekly Topics</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #ffe3ec, #ffc8dd);
+      padding: 2rem;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #d63384;
+    }
+
+    .course-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      /* Remove fixed max-height, allow natural sizing */
+    }
+
+    .course-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #d63384;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Arrow styles */
+    .toggle-arrow {
+      display: inline-block;
+      transition: transform 0.3s ease;
+      font-size: 1.5rem;
+      margin-left: 0.5rem;
+      user-select: none;
+    }
+    .rotated {
+      transform: rotate(90deg);
+    }
+
+    .week-list {
+      margin-top: 1rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .week-list.expanded {
+      max-height: 1000px; /* large enough to fit content */
+    }
+
+    .week-item {
+      background: #fbe4ef;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .week-info {
+      flex-grow: 1;
+    }
+
+    button {
+      background: #ffb3c6;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-left: 0.5rem;
+      font-weight: 600;
+    }
+
+    input, textarea {
+      width: 100%;
+      margin-top: 0.4rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    form {
+      margin-top: 1rem;
+    }
+
+    .edit-input {
+      width: 80%;
+      padding: 0.3rem;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 Weekly Topics</h1>
+  <div id="courses-container"></div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const API_URL = 'http://localhost:5000/api/weeklyTopics';
+
+    async function fetchCoursesWithTopics() {
+      try {
+        const res = await fetch(API_URL, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            alert("Unauthorized. Please login again.");
+            window.location.href = "/login.html";
+          }
+          return;
+        }
+
+        const data = await res.json();
+        renderCourses(data);
+      } catch (err) {
+        console.error("Error fetching topics:", err);
+        alert("Could not load topics.");
+      }
+    }
+
+    function renderCourses(courses) {
+      const container = document.getElementById('courses-container');
+      container.innerHTML = '';
+
+      courses.forEach(course => {
+        const card = document.createElement('div');
+        card.className = 'course-card';
+
+        const header = document.createElement('div');
+        header.className = 'course-header';
+        header.innerHTML = `
+          <h3>${course.CourseName}</h3>
+          <span class="toggle-arrow">&#9654;</span>
+        `;
+
+        const arrow = header.querySelector('.toggle-arrow');
+        const weekList = document.createElement('div');
+        weekList.className = 'week-list';
+        weekList.id = `weeks-${course.CourseId}`;
+
+        course.WeeklyTopics.forEach(topic => {
+          const item = document.createElement('div');
+          item.className = 'week-item';
+
+          const info = document.createElement('div');
+          info.className = 'week-info';
+          info.innerHTML = `<strong>Week ${topic.WeekNumber}</strong>: <span class="topic-text">${topic.Topic}</span>`;
+
+          const editBtn = document.createElement('button');
+          editBtn.textContent = 'Edit';
+          editBtn.onclick = (e) => {
+            e.stopPropagation(); // prevent toggling
+            enableEdit(topic, item);
+          };
+
+          item.appendChild(info);
+          item.appendChild(editBtn);
+          weekList.appendChild(item);
+        });
+
+        const form = document.createElement('form');
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const week = form.elements['week'].value;
+          const topic = form.elements['topic'].value;
+          await addTopic(course.CourseId, week, topic);
+        };
+        form.innerHTML = `
+          <input name="week" type="number" placeholder="Week Number" required />
+          <textarea name="topic" placeholder="Enter topic" required></textarea>
+          <button type="submit">Add Topic</button>
+        `;
+
+        weekList.appendChild(form);
+        card.appendChild(header);
+        card.appendChild(weekList);
+        container.appendChild(card);
+
+        // Toggle on header click
+        header.onclick = () => {
+          const expanded = weekList.classList.toggle('expanded');
+          if (expanded) {
+            arrow.classList.add('rotated');
+          } else {
+            arrow.classList.remove('rotated');
+          }
+        };
+      });
+    }
+
+    async function addTopic(courseId, weekNumber, topic) {
+      try {
+        const res = await fetch(`${API_URL}/${courseId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ WeekNumber: parseInt(weekNumber), Topic: topic })
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          alert(result.message || 'Error adding topic');
+        } else {
+          fetchCoursesWithTopics();
+        }
+      } catch (err) {
+        alert("Failed to add topic.");
+      }
+    }
+
+    function enableEdit(topic, item) {
+      const infoDiv = item.querySelector('.week-info');
+      const editBtn = item.querySelector('button');
+      const currentTopic = topic.Topic;
+
+      infoDiv.innerHTML = `
+        <strong>Week ${topic.WeekNumber}</strong>: 
+        <input class="edit-input" type="text" value="${currentTopic}" />
+      `;
+
+      editBtn.textContent = "Save";
+      editBtn.onclick = async () => {
+        const newTopic = infoDiv.querySelector('input').value.trim();
+        if (!newTopic) return alert("Topic cannot be empty.");
+
+        const res = await fetch(`${API_URL}/${topic.WeeklyTopicId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ Topic: newTopic })
+        });
+
+        if (res.ok) {
+          fetchCoursesWithTopics();
+        } else {
+          alert("Failed to update topic.");
+        }
+      };
+    }
+
+    fetchCoursesWithTopics();
+  </script>
+</body>
+</html>

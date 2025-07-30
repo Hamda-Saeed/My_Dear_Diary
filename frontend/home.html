@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Planner - Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="home.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <h2><i class="fas fa-book"></i> My Planner</h2>
+    <a href="home.html" class="nav-item"><i class="fas fa-home"></i> Home</a>
+    <a href="courses.html" class="nav-item"><i class="fas fa-book-open"></i> Courses</a>
+    <a href="timetable.html" class="nav-item"><i class="fas fa-calendar-alt"></i> Timetable</a>
+
+    <div class="nav-item" onclick="toggleDropdown()">
+      <span><i class="fas fa-tasks"></i> Tasks</span>
+      <span class="arrow" id="arrow">&#9660;</span>
+    </div>
+    <div class="dropdown-menu" id="dropdownMenu">
+      <a href="quiz.html" class="nav-item">Quiz</a>
+      <a href="assignment.html" class="nav-item">Assignment</a>
+      <a href="presentation.html" class="nav-item">Presentation</a>
+      <a href="exam.html" class="nav-item">Exam</a>
+    </div>
+
+    <a href="covered-topics.html" class="nav-item"><i class="fas fa-check-circle"></i> Covered Topics</a>
+    <a href="weekly-topics.html" class="nav-item"><i class="fas fa-calendar-week"></i> Weekly Topics</a>
+    <a href="profile.html" class="nav-item"><i class="fas fa-user"></i> Profile</a>
+    <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+    <div class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+  </div>
+
+  <!-- Hamburger -->
+  <div class="hamburger" onclick="toggleSidebar()">&#9776;</div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="dashboard-header">
+      <h1>Welcome to Your Dashboard</h1>
+      <p>Stay organized and on top of your schedule</p>
+    </div>
+    
+    <div class="dashboard-grid">
+      <div class="dashboard-card">
+        <h2><i class="fas fa-calendar-day"></i> Upcoming Events</h2>
+        <div class="events-list">
+          <div class="event-item">
+            <div class="event-icon">
+              <i class="fas fa-book"></i>
+            </div>
+            <div class="event-details">
+              <div class="event-title">Math Assignment Due</div>
+              <div class="event-time">Tomorrow, 10:00 AM</div>
+            </div>
+          </div>
+          
+          <div class="event-item">
+            <div class="event-icon">
+              <i class="fas fa-vial"></i>
+            </div>
+            <div class="event-details">
+              <div class="event-title">Chemistry Lab</div>
+              <div class="event-time">Thu, Jun 5, 2:00 PM</div>
+            </div>
+          </div>
+          
+          <div class="event-item">
+            <div class="event-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="event-details">
+              <div class="event-title">Group Project Meeting</div>
+              <div class="event-time">Fri, Jun 6, 4:30 PM</div>
+            </div>
+          </div>
+          
+          <div class="event-item">
+            <div class="event-icon">
+              <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <div class="event-details">
+              <div class="event-title">History Presentation</div>
+              <div class="event-time">Mon, Jun 9, 11:00 AM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="dashboard-card calendar-card">
+        <div class="calendar-header">
+          <h2 class="calendar-title"><i class="fas fa-calendar"></i> Calendar</h2>
+          <div class="calendar-nav">
+            <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+            <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+        
+        <div class="calendar-weekdays">
+          <div>Sun</div>
+          <div>Mon</div>
+          <div>Tue</div>
+          <div>Wed</div>
+          <div>Thu</div>
+          <div>Fri</div>
+          <div>Sat</div>
+        </div>
+        
+        <div class="calendar-days" id="calendarDays">
+          <!-- Calendar days will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <div class="stat-value">8</div>
+        <div class="stat-label">Pending Tasks</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-book"></i>
+        </div>
+        <div class="stat-value">5</div>
+        <div class="stat-label">Active Courses</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="stat-value">14</div>
+        <div class="stat-label">Upcoming Events</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="home.js"></script>
+</body>
+</html>
