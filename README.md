@@ -34,6 +34,11 @@ Though the foundation has been laid, many parts of the app — especially **seve
 - Advanced features like note tagging, search filters, visual mood stats
 
 ---
+## 🖼️ Preview
+
+![Dear Diary Preview](MyDiary.png)
+
+🎬 **[Click here to watch the demo](https://drive.google.com/file/d/1wdtzsV4qahTXiXDZpz7jJ_wAOm90HlCL/view?usp=sharing)**
 
 ## 💻 Tech Stack
 
